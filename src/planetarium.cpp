@@ -35,7 +35,9 @@ cv::Mat load_catalog(const char* filename) {
         line_str >> ra; line_str.get();
         line_str >> de; line_str.get();
 
-        cv::Mat catline = (cv::Mat_<float>(1,3) << mag, ra, de);
+        // Convert angles to radians
+        const double deg_to_rad = 3.14159265359 / 180.0;
+        cv::Mat catline = (cv::Mat_<float>(1,3) << mag, ra * deg_to_rad, de * deg_to_rad);
         catalog.push_back(catline);
     }
     return catalog;
@@ -65,7 +67,38 @@ void draw_star(cv::Mat image, float star_x, float star_y) {
 
             // Get the point spread function value at that distance from the star
             float distance = sqrt(pow(star_x - x, 2) + pow(star_y - y, 2));
-            image.at<float>(y,x) += psf_gaussian(distance);
+
+            // If within bounds, add it to current value
+            if (y > 0 && x > 0 && y < image.rows && x < image.cols) {
+                image.at<float>(y,x) += psf_gaussian(distance);
+            }
+        }
+    }
+}
+
+void draw_visible_stars(cv::Mat image, cv::Mat catalog) {
+    const double screen_distance = 1.0;
+    const double screen_width = 800;
+    const double screen_height = 600;
+    const double pixel_size = 0.002;
+
+    for (int i = 0; i < catalog.rows; i++) {
+        double ra = catalog.at<float>(i, 1);
+        double de = catalog.at<float>(i, 2);
+
+        if (ra > -1.5 && ra < 1.5 && de > -1.5 && de < 1.5) {
+            double x = screen_distance * tan(ra);
+            double y = screen_distance * tan(de);
+
+            // Meters to pixel
+            int x_screen = round(-x / pixel_size + screen_width / 2);
+            int y_screen = round(-y / pixel_size + screen_height / 2);
+
+            std::cout << x_screen << " " << y_screen  << std::endl;
+
+            if (x_screen > 0 && x_screen < screen_width && y_screen > 0 && y_screen < screen_height) {
+                draw_star(image, x_screen, y_screen);
+            }
         }
     }
 }
@@ -73,21 +106,13 @@ void draw_star(cv::Mat image, float star_x, float star_y) {
 int main() {
     cv::namedWindow("Planetarium", cv::WINDOW_AUTOSIZE);
 
+    // Black background
     cv::Mat image(600, 800, CV_32FC1);
 
+    // Load star catalog
     cv::Mat catalog = load_catalog("../hip5.tsv");
 
-    draw_star(image, 100, 100.0);
-    draw_star(image, 110, 100.1);
-    draw_star(image, 120, 100.2);
-    draw_star(image, 130, 100.3);
-    draw_star(image, 140, 100.4);
-    draw_star(image, 150, 100.4);
-    draw_star(image, 160, 100.6);
-    draw_star(image, 170, 100.7);
-    draw_star(image, 180, 100.8);
-    draw_star(image, 190, 100.9);
-    draw_star(image, 200, 101.0);
+    draw_visible_stars(image, catalog);
 
     // Threshold to 1.0
     cv::threshold(image, image, 1.0, 0.0, cv::THRESH_TRUNC);
