@@ -8,6 +8,10 @@
 #include <vector>
 #include <algorithm>
 
+#ifndef M_PI
+    #define M_PI 3.14159265359
+#endif
+
 typedef unsigned char uchar;
 
 // Load Hipparcos catalog
@@ -36,7 +40,7 @@ cv::Mat load_catalog(const char* filename) {
         line_str >> de; line_str.get();
 
         // Convert angles to radians
-        const double deg_to_rad = 3.14159265359 / 180.0;
+        const double deg_to_rad = M_PI / 180.0;
         cv::Mat catline = (cv::Mat_<float>(1,3) << mag, ra * deg_to_rad, de * deg_to_rad);
         catalog.push_back(catline);
     }
@@ -77,24 +81,27 @@ void draw_star(cv::Mat image, float star_x, float star_y) {
 }
 
 void draw_visible_stars(cv::Mat image, cv::Mat catalog) {
-    const double screen_distance = 1.0;
+    const double screen_distance = .3;
     const double screen_width = 800;
     const double screen_height = 600;
-    const double pixel_size = 0.002;
+    const double screen_horizontal_pixel_size = 0.0002 ;
+    const double screen_vertical_pixel_size = 0.0002;
 
     for (int i = 0; i < catalog.rows; i++) {
         double ra = catalog.at<float>(i, 1);
         double de = catalog.at<float>(i, 2);
 
-        if (ra > -1.5 && ra < 1.5 && de > -1.5 && de < 1.5) {
+        double max_ra = std::atan((screen_width * screen_horizontal_pixel_size) / (2*screen_distance));
+        double max_de = std::atan((screen_height * screen_vertical_pixel_size) / (2*screen_distance));
+
+        // RA is in [0;2pi] but DE is in [-pi;pi]
+        if (ra - M_PI > -max_ra && ra - M_PI < max_ra && de > -max_de && de < max_de) {
             double x = screen_distance * tan(ra);
             double y = screen_distance * tan(de);
 
             // Meters to pixel
-            int x_screen = round(-x / pixel_size + screen_width / 2);
-            int y_screen = round(-y / pixel_size + screen_height / 2);
-
-            std::cout << x_screen << " " << y_screen  << std::endl;
+            int x_screen = round(-x / screen_horizontal_pixel_size + screen_width / 2);
+            int y_screen = round(-y / screen_vertical_pixel_size + screen_height / 2);
 
             if (x_screen > 0 && x_screen < screen_width && y_screen > 0 && y_screen < screen_height) {
                 draw_star(image, x_screen, y_screen);
@@ -117,8 +124,12 @@ int main() {
     // Threshold to 1.0
     cv::threshold(image, image, 1.0, 0.0, cv::THRESH_TRUNC);
 
-    while(cvWaitKey(5) != 27) {
+    int k;
+    while((k = cvWaitKey(5)) != 27) {
         cv::imshow("Planetarium", image);
+        if (k != -1) {
+            std::cout << k << std::endl;
+        }
     }
 
     return 0;
