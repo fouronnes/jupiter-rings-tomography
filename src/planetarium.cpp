@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <cmath>
 #include "cv.h"
 #include "cxcore.h"
@@ -7,6 +9,37 @@
 #include <algorithm>
 
 typedef unsigned char uchar;
+
+// Load Hipparcos catalog
+cv::Mat load_catalog(const char* filename) {
+    cv::Mat catalog(1, 3, CV_32FC1);
+    std::ifstream file(filename);
+    std::string line, cell;
+
+    if (!file) {
+        std::cerr << "Can't open catalog " << filename << std::endl;
+        return catalog;
+    }
+
+    // Skip first line
+    std::getline(file, line);
+
+    // Extract each line data
+    while (std::getline(file, line)) {
+        std::stringstream line_str(line);
+
+        // Read fields
+        double hip(0.0), mag(0.0), ra(0.0), de(0.0);
+        line_str >> hip; line_str.get();
+        line_str >> mag; line_str.get();
+        line_str >> ra; line_str.get();
+        line_str >> de; line_str.get();
+
+        cv::Mat catline = (cv::Mat_<float>(1,3) << mag, ra, de);
+        catalog.push_back(catline);
+    }
+    return catalog;
+}
 
 // The value of a gaussian point spread function at a given distance
 float psf_gaussian(float distance) {
@@ -42,6 +75,8 @@ int main() {
 
     cv::Mat image(600, 800, CV_32FC1);
 
+    cv::Mat catalog = load_catalog("../hip5.tsv");
+
     draw_star(image, 100, 100.0);
     draw_star(image, 110, 100.1);
     draw_star(image, 120, 100.2);
@@ -55,9 +90,7 @@ int main() {
     draw_star(image, 200, 101.0);
 
     // Threshold to 1.0
-    std::cout << image.at<float>(100, 100) << std::endl;
     cv::threshold(image, image, 1.0, 0.0, cv::THRESH_TRUNC);
-    std::cout << image.at<float>(100, 100) << std::endl;
 
     while(cvWaitKey(5) != 27) {
         cv::imshow("Planetarium", image);
