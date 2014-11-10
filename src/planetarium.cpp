@@ -10,7 +10,8 @@ typedef unsigned char uchar;
 
 // The value of a gaussian point spread function at a given distance
 float psf_gaussian(float distance) {
-    return 1.0 * exp(-(distance*distance) / 5.0);
+    // Amplitude and std
+    return 1.0 * exp(-(distance*distance) / 1.0);
 }
 
 // Draw a star at given screen coordinates
@@ -19,7 +20,7 @@ void draw_star(cv::Mat image, float star_x, float star_y) {
 
     // Max size of the spread to one side in pixels
     // e.g. 1 means the square of pixels modified will be 3x3
-    const int spread_size = 4;
+    const int spread_size = 5;
 
     // Closest discrete pixel to the star location
     const int center_x = round(star_x);
@@ -31,7 +32,7 @@ void draw_star(cv::Mat image, float star_x, float star_y) {
 
             // Get the point spread function value at that distance from the star
             float distance = sqrt(pow(star_x - x, 2) + pow(star_y - y, 2));
-            image.at<float>(x,y) += psf_gaussian(distance);
+            image.at<float>(y,x) += psf_gaussian(distance);
         }
     }
 }
