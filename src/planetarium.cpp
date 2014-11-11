@@ -92,28 +92,33 @@ struct planetarium {
         }
     }
 
+    // True if a (ra,de) coordinate is visible on the screen
+    bool is_star_visible(const double ra, const double de) {
+        const double max_ra = std::atan((screen_width * screen_horizontal_pixel_size) / (2*screen_distance));
+        const double max_de = std::atan((screen_height * screen_vertical_pixel_size) / (2*screen_distance));
+
+        // RA is in [0;2pi] but DE is in [-pi;pi]
+        return ra - M_PI > -max_ra && ra - M_PI < max_ra && de > -max_de && de < max_de;
+    }
+
     void draw_visible_stars(cv::Mat image, cv::Mat catalog) {
         // For each entry in the catalog
         for (int i = 0; i < catalog.rows; i++) {
             const double ra = catalog.at<float>(i, 1);
             const double de = catalog.at<float>(i, 2);
 
-            const double max_ra = std::atan((screen_width * screen_horizontal_pixel_size) / (2*screen_distance));
-            const double max_de = std::atan((screen_height * screen_vertical_pixel_size) / (2*screen_distance));
-
             // If star is visible
-            // RA is in [0;2pi] but DE is in [-pi;pi]
-            if (ra - M_PI > -max_ra && ra - M_PI < max_ra && de > -max_de && de < max_de) {
+            if (is_star_visible(ra, de)) {
                 const double x = screen_distance * tan(ra);
                 const double y = screen_distance * tan(de);
 
-                // Meters to pixel
+                // Convert between:
+                // Origin in the center, (x,y) in meters
+                // Origin in the corner, (x_screen,y_screen) in pixels
                 const int x_screen = round(-x / screen_horizontal_pixel_size + screen_width / 2);
                 const int y_screen = round(-y / screen_vertical_pixel_size + screen_height / 2);
 
-                if (x_screen > 0 && x_screen < screen_width && y_screen > 0 && y_screen < screen_height) {
-                    draw_star(image, x_screen, y_screen);
-                }
+                draw_star(image, x_screen, y_screen);
             }
         }
     }
