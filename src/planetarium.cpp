@@ -123,8 +123,8 @@ struct planetarium {
             double de = catalog.at<float>(i, 2);
 
             // Translate star by current attitude
-            // ra = angle_modulo(ra - attitude_ra, 0, 2*M_PI);
-            // de = angle_modulo(de - attitude_de, -M_PI, M_PI);
+            ra = angle_modulo(ra - attitude_ra, 0, 2*M_PI);
+            de = angle_modulo(de - attitude_de, -M_PI, M_PI);
 
             // If star is visible
             if (is_star_visible(ra, de)) {
@@ -144,7 +144,7 @@ struct planetarium {
 
     cv::Mat render(cv::Mat catalog) const {
         // Black background
-        cv::Mat image(screen_height, screen_width, CV_32FC1);
+        cv::Mat image = cv::Mat::zeros(screen_height, screen_width, CV_32FC1);
 
         draw_visible_stars(image, catalog);
 
@@ -170,8 +170,8 @@ int main() {
     wall.screen_horizontal_pixel_size = 0.0002 ;
     wall.screen_vertical_pixel_size = 0.0002;
 
-    wall.attitude_ra = 0;//1*M_PI/180;
-    wall.attitude_de = 0;//1*M_PI/180;
+    wall.attitude_ra = 0*M_PI/180;
+    wall.attitude_de = 0*M_PI/180;
 
     // Load star catalog
     cv::Mat catalog = load_catalog("../hip6.tsv");
@@ -179,12 +179,7 @@ int main() {
     cv::Mat image = wall.render(catalog);
 
     int k;
-    while((k = cvWaitKey(5)) != 27) {
-        cv::imshow("Planetarium", image);
-        if (k != -1) {
-            std::cout << k << std::endl;
-        }
-
+    while((k = cvWaitKey(30)) != 27) {
         // Left
         if (k == 65361) {
             wall.attitude_ra += 1*M_PI/180;
@@ -195,6 +190,18 @@ int main() {
             wall.attitude_ra -= 1*M_PI/180;
             image = wall.render(catalog);
         }
+        // Up
+        else if (k == 65362) {
+            wall.attitude_de += 1*M_PI/180;
+            image = wall.render(catalog);
+        }
+        // Down
+        else if (k == 65364) {
+            wall.attitude_de -= 1*M_PI/180;
+            image = wall.render(catalog);
+        }
+
+        cv::imshow("Planetarium", image);
     }
 
     return 0;
