@@ -60,10 +60,6 @@ double angle_modulo(double angle, double min, double max) {
 }
 
 struct planetarium {
-    // Point spread function
-    double psf_amplitude;
-    double psf_sigma;
-
     // Max size of the spread to one side in pixels
     // e.g. 1 means the square of pixels modified will be 3x3
     double psf_spread_size;
@@ -79,14 +75,13 @@ struct planetarium {
     double attitude_ra;
     double attitude_de;
 
-    // The value of a gaussian point spread function at a given distance
-    float psf_gaussian(float distance) const {
-        return psf_amplitude * exp(-(distance*distance) / psf_sigma);
+    // The gaussian function
+    float psf_gaussian(float distance, float amplitude, float spread) const {
+        return amplitude * exp(-(distance*distance) / spread);
     }
 
-    // Draw a star at given screen coordinates
-    // Uses a gaussian point spread function
-    void draw_star(cv::Mat image, float star_x, float star_y) const {
+    // Draw a gaussian psf at given screen coordinates
+    void draw_gaussian(cv::Mat image, float star_x, float star_y, float amplitude, float spread) const {
         // Closest discrete pixel to the star location
         const int center_x = round(star_x);
         const int center_y = round(star_y);
@@ -100,10 +95,14 @@ struct planetarium {
 
                 // If within bounds, add it to current value
                 if (y > 0 && x > 0 && y < image.rows && x < image.cols) {
-                    image.at<float>(y,x) += psf_gaussian(distance);
+                    image.at<float>(y,x) += psf_gaussian(distance, amplitude, spread);
                 }
             }
         }
+    }
+
+    void draw_star(cv::Mat image, float star_x, float star_y, float mag) const {
+        draw_gaussian(image, star_x, star_y, 1.0, 1.0);
     }
 
     // True if a (ra,de) coordinate is visible on the screen
@@ -119,6 +118,7 @@ struct planetarium {
     void draw_visible_stars(cv::Mat image, cv::Mat catalog) const {
         // For each entry in the catalog
         for (int i = 0; i < catalog.rows; i++) {
+            float mag = catalog.at<float>(i, 0);
             double ra = catalog.at<float>(i, 1);
             double de = catalog.at<float>(i, 2);
 
@@ -137,7 +137,7 @@ struct planetarium {
                 const int x_screen = round(-x / screen_horizontal_pixel_size + screen_width / 2);
                 const int y_screen = round(-y / screen_vertical_pixel_size + screen_height / 2);
 
-                draw_star(image, x_screen, y_screen);
+                draw_star(image, x_screen, y_screen, mag);
             }
         }
     }
@@ -160,8 +160,6 @@ int main() {
 
     planetarium wall;
 
-    wall.psf_amplitude = 1.0;
-    wall.psf_sigma = 1.0;
     wall.psf_spread_size = 5;
 
     wall.screen_distance = .3;
