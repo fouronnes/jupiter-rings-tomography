@@ -75,13 +75,22 @@ struct planetarium {
     double attitude_ra;
     double attitude_de;
 
+    // Star rendering parameters
+    double I_ref, m_ref, sigma_0;
+
+    // Linear inverse gamma function
+    float gamma_inverse(float intensity) const {
+        float gamma = I_ref;
+        return intensity / gamma;
+    }
+
     // The gaussian function
-    float psf_gaussian(float distance, float amplitude, float spread) const {
-        return amplitude * exp(-(distance*distance) / spread);
+    float psf_gaussian(float distance, float alpha, float sigma) const {
+        return alpha * exp(-(distance*distance) / (sigma*sigma));
     }
 
     // Draw a gaussian psf at given screen coordinates
-    void draw_gaussian(cv::Mat image, float star_x, float star_y, float amplitude, float spread) const {
+    void draw_gaussian(cv::Mat image, float star_x, float star_y, float alpha, float sigma) const {
         // Closest discrete pixel to the star location
         const int center_x = round(star_x);
         const int center_y = round(star_y);
@@ -95,14 +104,30 @@ struct planetarium {
 
                 // If within bounds, add it to current value
                 if (y > 0 && x > 0 && y < image.rows && x < image.cols) {
-                    image.at<float>(y,x) += psf_gaussian(distance, amplitude, spread);
+                    image.at<float>(y,x) += gamma_inverse(psf_gaussian(distance, alpha, sigma));
                 }
             }
         }
     }
 
     void draw_star(cv::Mat image, float star_x, float star_y, float mag) const {
-        draw_gaussian(image, star_x, star_y, 1.0, 1.0);
+        // Intensity of the star we are rendering
+        const float I_star = I_ref * pow(10, (m_ref - mag)/2.5);
+
+        // Maximum for rendering star with fixed sigma
+        const float I_max = I_ref * sigma_0 * sigma_0 * M_PI;
+
+        float alpha, sigma;
+        if (I_star <= I_max) {
+            alpha = I_star / (sigma_0 * sigma_0 * M_PI);
+            sigma = sigma_0;
+        }
+        else {
+            alpha = I_ref;
+            sigma = sqrt(I_star / (I_ref * M_PI));
+        }
+
+        draw_gaussian(image, star_x, star_y, alpha, sigma);
     }
 
     // True if a (ra,de) coordinate is visible on the screen
@@ -168,8 +193,12 @@ int main() {
     wall.screen_horizontal_pixel_size = 0.0002 ;
     wall.screen_vertical_pixel_size = 0.0002;
 
-    wall.attitude_ra = 0*M_PI/180;
-    wall.attitude_de = 0*M_PI/180;
+    wall.attitude_ra = 45*M_PI/180;
+    wall.attitude_de = 20*M_PI/180;
+
+    wall.I_ref = 1.0;
+    wall.m_ref = 3.0;
+    wall.sigma_0 = 0.5;
 
     // Load star catalog
     cv::Mat catalog = load_catalog("../hip6.tsv");
