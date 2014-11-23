@@ -185,7 +185,7 @@ int main() {
 
     planetarium wall;
 
-    wall.psf_spread_size = 5;
+    wall.psf_spread_size = 8;
 
     wall.screen_distance = .3;
     wall.screen_width = 1000;
@@ -197,7 +197,7 @@ int main() {
     wall.attitude_de = 2*M_PI/180;
 
     wall.I_ref = 1.0;
-    wall.m_ref = 2.0;
+    wall.m_ref = 3.0;
     wall.sigma_0 = 1.0;
 
     // Load star catalog
