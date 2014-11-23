@@ -193,12 +193,12 @@ int main() {
     wall.screen_horizontal_pixel_size = 0.0002 ;
     wall.screen_vertical_pixel_size = 0.0002;
 
-    wall.attitude_ra = 45*M_PI/180;
-    wall.attitude_de = 20*M_PI/180;
+    wall.attitude_ra = 84*M_PI/180;
+    wall.attitude_de = 2*M_PI/180;
 
     wall.I_ref = 1.0;
-    wall.m_ref = 3.0;
-    wall.sigma_0 = 0.5;
+    wall.m_ref = 2.0;
+    wall.sigma_0 = 1.0;
 
     // Load star catalog
     cv::Mat catalog = load_catalog("../hip6.tsv");
@@ -207,24 +207,25 @@ int main() {
 
     int k;
     while((k = cvWaitKey(30)) != 27) {
-        // Left
-        if (k == 65361) {
-            wall.attitude_ra += 1*M_PI/180;
-            image = wall.render(catalog);
-        }
-        // Right
-        else if (k == 65363) {
-            wall.attitude_ra -= 1*M_PI/180;
-            image = wall.render(catalog);
-        }
-        // Up
-        else if (k == 65362) {
-            wall.attitude_de += 1*M_PI/180;
-            image = wall.render(catalog);
-        }
-        // Down
-        else if (k == 65364) {
-            wall.attitude_de -= 1*M_PI/180;
+        if (k >= 65361 and k <= 65364) {
+            // Left
+            if (k == 65361) {
+                wall.attitude_ra += 1*M_PI/180;
+            }
+            // Right
+            else if (k == 65363) {
+                wall.attitude_ra -= 1*M_PI/180;
+            }
+            // Up
+            else if (k == 65362) {
+                wall.attitude_de += 1*M_PI/180;
+            }
+            // Down
+            else if (k == 65364) {
+                wall.attitude_de -= 1*M_PI/180;
+            }
+            std::cout << "Attitude: Right Ascension: " << wall.attitude_ra << std::endl;
+            std::cout << "          Declination    : " << wall.attitude_de << std::endl;
             image = wall.render(catalog);
         }
 
