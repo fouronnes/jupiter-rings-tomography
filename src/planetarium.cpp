@@ -78,6 +78,9 @@ struct planetarium {
     // Star rendering parameters
     double I_ref, m_ref, sigma_0;
 
+    // Camera position with respect to screen center
+    double camera_x_offset, camera_y_offset; // Meters
+
     // Linear inverse gamma function
     float gamma_inverse(float intensity) const {
         float gamma = I_ref;
@@ -153,8 +156,8 @@ struct planetarium {
 
             // If star is visible
             if (is_star_visible(ra, de)) {
-                const double x = screen_distance * tan(ra);
-                const double y = screen_distance * tan(de);
+                const double x = camera_x_offset + screen_distance * tan(ra);
+                const double y = camera_y_offset + screen_distance * tan(de);
 
                 // Convert between:
                 // Origin in the center, (x,y) in meters
@@ -187,11 +190,11 @@ int main() {
 
     wall.psf_spread_size = 8;
 
-    wall.screen_distance = .3;
+    wall.screen_distance = 5.78;
     wall.screen_width = 1920;
     wall.screen_height = 1080;
-    wall.screen_horizontal_pixel_size = 0.0002 ;
-    wall.screen_vertical_pixel_size = 0.0002;
+    wall.screen_horizontal_pixel_size = 2.44 / wall.screen_width;
+    wall.screen_vertical_pixel_size = 1.375 / wall.screen_height;
 
     wall.attitude_ra = 84*M_PI/180;
     wall.attitude_de = 2*M_PI/180;
@@ -199,6 +202,9 @@ int main() {
     wall.I_ref = 1.0;
     wall.m_ref = 3.0;
     wall.sigma_0 = 1.0;
+
+    wall.camera_x_offset = 0.0;
+    wall.camera_y_offset = 0.0;
 
     // Load star catalog
     cv::Mat catalog = load_catalog("../hip6.tsv");
