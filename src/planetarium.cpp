@@ -181,15 +181,15 @@ struct planetarium {
 };
 
 int main() {
-    cv::namedWindow("Planetarium", cv::WINDOW_AUTOSIZE);
+    cv::namedWindow("Planetarium", cv::WINDOW_NORMAL);
 
     planetarium wall;
 
     wall.psf_spread_size = 8;
 
     wall.screen_distance = .3;
-    wall.screen_width = 1000;
-    wall.screen_height = 700;
+    wall.screen_width = 1920;
+    wall.screen_height = 1080;
     wall.screen_horizontal_pixel_size = 0.0002 ;
     wall.screen_vertical_pixel_size = 0.0002;
 
@@ -227,6 +227,8 @@ int main() {
             std::cout << "Attitude: Right Ascension: " << wall.attitude_ra << std::endl;
             std::cout << "          Declination    : " << wall.attitude_de << std::endl;
             image = wall.render(catalog);
+        } else if (k == 102) {
+            cvSetWindowProperty("Planetarium", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN );
         }
 
         cv::imshow("Planetarium", image);
