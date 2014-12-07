@@ -133,6 +133,19 @@ def calib_plot(images, p_range, noise_threshold, newfig=True):
         plot(p_range[-len(sd[:,2]):], sd[:,2], '+', ms=1)
     show()
 
+def plot_all():
+    figure()
+    calib_plot(all_images[10000], p_range, 0.2, newfig=False)
+    calib_plot(all_images[40000], p_range, 0.2, newfig=False)
+    calib_plot(all_images[20000], p_range, 0.2, newfig=False)
+    xticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+    xticks([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+    yticks(np.arange(0, 65, 5)[1:])
+    grid()
+    xlabel('Pixel intensity')
+    ylabel('Measured intensity')
+    show()
+
 """
 Calibration images should follow the naming convention: <shutter time>ST<number>.bmp
 For example: 20000ST1.bmp
