@@ -1,17 +1,33 @@
 from pylab import *
 from mpl_toolkits.mplot3d import Axes3D
 
-X = 100
-Y = 0
-Z = 0
+# Load juno orbit 1
+juno = np.loadtxt('juno-state-orbit1.txt')
 
-ax = 0.1
-ay = 1
-az = 0.2
+# Load attitude file
+attitude = np.loadtxt('juno-attitude.txt')
 
-y = linspace(-100, 100, 1000)
+def project_state(state):
+    """
+    Project 3D state to the vertical ring plane
+    using cylindrical coordinates.
+    Input: n,3 matrix (X,Y,Z)
+    Output: n,2 matrix (X,Y)
+    """
+    x = sqrt(state[:,0]**2 + state[:,1]**2)
+    y = state[:,2]
+    return np.vstack((x,y)).T
 
-x = (X + (y - Z)*ax/az)**2 + (Y + (y - Z)*ay/az)**2
+def make_ray(X, Y, Z, RA, DE, length):
+    ax = cos(DE) * cos(RA)
+    ay = cos(DE) * sin(RA)
+    az = sin(DE)
+
+    mu = linspace(0, length, length/1000)
+    x = sqrt((X + mu*ax)**2 + (Y + mu*ay)**2)
+    y = Z + mu*az
+
+    return x,y
 
 def plot3d(x, y, z):
     f = figure()
