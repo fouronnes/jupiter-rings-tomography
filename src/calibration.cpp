@@ -31,7 +31,10 @@ int main() {
             x = 0;
             y += y_step;
         }
+        std::cout << p << std::endl;
     }
+
+    cv::flip(image, image, 0);
 
     int k;
     while((k = cvWaitKey(30)) != 27) {

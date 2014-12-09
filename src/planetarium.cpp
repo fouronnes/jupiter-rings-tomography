@@ -190,17 +190,23 @@ int main() {
 
     wall.psf_spread_size = 8;
 
-    wall.screen_distance = 5.78;
+    wall.screen_distance = 5.954;
     wall.screen_width = 1920;
     wall.screen_height = 1080;
-    wall.screen_horizontal_pixel_size = 2.44 / wall.screen_width;
-    wall.screen_vertical_pixel_size = 1.375 / wall.screen_height;
+    wall.screen_horizontal_pixel_size = 2.364 / wall.screen_width;
+    wall.screen_vertical_pixel_size = 1.335 / wall.screen_height;
 
+    // Orion
     wall.attitude_ra = 84*M_PI/180;
     wall.attitude_de = 2*M_PI/180;
 
+    // Juno
+    // wall.attitude_ra = -2.885402;
+    // wall.attitude_de = 0.133802;
+    // Twist: 0.054906
+
     wall.I_ref = 1.0;
-    wall.m_ref = 3.0;
+    wall.m_ref = 6.0;
     wall.sigma_0 = 1.0;
 
     wall.camera_x_offset = 0.0;
@@ -230,8 +236,8 @@ int main() {
             else if (k == 65364) {
                 wall.attitude_de -= 1*M_PI/180;
             }
-            std::cout << "Attitude: Right Ascension: " << wall.attitude_ra << std::endl;
-            std::cout << "          Declination    : " << wall.attitude_de << std::endl;
+            std::cout << "Attitude: Right Ascension: " << 180/M_PI * wall.attitude_ra << std::endl;
+            std::cout << "          Declination    : " << 180/M_PI * wall.attitude_de << std::endl;
             image = wall.render(catalog);
         } else if (k == 102) {
             cvSetWindowProperty("Planetarium", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN );
