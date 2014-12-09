@@ -73,25 +73,25 @@ int main()
     std::cout << "Orbit 1" << std::endl;
     str2et_c("2016 OCT 25 20:38:52", &et);
     str2et_c("2016 NOV 05 20:15:32", &et1);
-    write_state("juno-state-orbit1.txt", et, et1, 60);
+    write_state("juno-state-orbit1.txt", et, et1, 5*60);
 
     // Orbit 2
     std::cout << "Orbit 2" << std::endl;
     str2et_c("2016 NOV 05 20:15:32", &et);
     str2et_c("2016 NOV 16 20:25:32", &et1);
-    write_state("juno-state-orbit2.txt", et, et1, 60);
+    write_state("juno-state-orbit2.txt", et, et1, 5*60);
 
     // Orbit 3
     std::cout << "Orbit 3" << std::endl;
     str2et_c("2016 NOV 16 20:25:32", &et);
     str2et_c("2016 NOV 27 20:18:52", &et1);
-    write_state("juno-state-orbit3.txt", et, et1, 60);
+    write_state("juno-state-orbit3.txt", et, et1, 5*60);
 
     // Orbit 4
     std::cout << "Orbit 4" << std::endl;
     str2et_c("2016 NOV 27 20:18:52", &et);
     str2et_c("2016 DEC 08 20:12:12", &et1);
-    write_state("juno-state-orbit4.txt", et, et1, 60);
+    write_state("juno-state-orbit4.txt", et, et1, 5*60);
 
     // Attitude every half second
     std::cout << "Attitude" << std::endl;
