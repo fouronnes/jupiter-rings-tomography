@@ -9,6 +9,8 @@ juno = np.loadtxt('juno-state-orbit1.txt')
 # Load attitude file
 attitude = np.loadtxt('juno-attitude.txt')
 
+perigee_time = 5.3112e8
+
 def project_state(state):
     """
     Project 3D state to the vertical ring plane
@@ -65,6 +67,72 @@ def draw_ring():
     patch = patches.PathPatch(path, facecolor='gray', lw=0)
     ax.add_patch(patch)
 
+def draw_ray(state, RA, DE, dist):
+    x,y = make_ray(state[1], state[2], state[3], RA, DE, dist)
+    plot(x,y, '-', linewidth=1, color="black")
+
+def draw_fov(state, dist):
+    for att in attitude:
+        draw_ray(state, att[1], att[2], dist)
+
+def state_for_time(time):
+    """
+    Return spacecraft state closest to time
+    """
+    index = np.argmin(abs(juno[:,0] - time))
+    return juno[index, :]
+
+def draw_orbit():
+    s = project_state(juno[:, [1,2,3]])
+    plot(s[:,0], s[:,1], '-', color="black", linewidth=2)
+
+def one_ray_figure():
+    f = figure()
+    ax = f.add_subplot(111, aspect="equal")
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.get_xaxis().tick_bottom()  
+    ax.get_yaxis().tick_left()  
+
+    draw_orbit()
+    draw_jupiter()
+
+    att_index = 10
+    draw_ray(state_for_time(perigee_time + 2200), attitude[att_index, 1], attitude[att_index, 2], 400000)
+
+    # xlabel(r"$\rho$", size=16)
+    # ylabel(r"$z (10^3 km)$", fontsize=16)
+    xlim(35000, 250000)
+    ylim(-60000, 60000)
+
+    label_text = [r"$%i$" % int(loc/10**3) for loc in xticks()[0]]
+    ax.set_xticklabels(label_text)
+
+    label_text = [r"$%i$" % int(loc/10**3) for loc in yticks()[0]]
+    ax.set_yticklabels(label_text)
+
+    draw_ring()
+    show()
+
+def ring_intersect_figure(a, b):
+    f = figure()
+    ax = f.add_subplot(111, aspect="equal")
+    draw_orbit()
+    draw_jupiter()
+
+    time_1 = perigee_time - a
+    time_2 = perigee_time + b
+
+    draw_fov(state_for_time(time_1), 400000)
+    draw_fov(state_for_time(time_2), 400000)
+
+    draw_ring()
+
+    xlim(20000, 250000)
+    ylim(-100000, 100000)
+    show()
+
 def test():
 
     RA = attitude[0,0]
@@ -88,6 +156,4 @@ def test():
 
     draw_ring()
     show()
-
-test()
 
