@@ -33,12 +33,11 @@ def make_ray(X, Y, Z, RA, DE, length):
 
     return x,y
 
-def plot3d(x, y, z):
-    f = figure()
-    ax = f.add_subplot(111, projection='3d')
-    ax.plot(x, y, z, '.')
-    show()
-
+def plot3d(x,y,z):
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot_surface(x, y, z)
+    plt.show()
 def draw_jupiter():
     # autoscale(False)
     c = Circle((0, 0), 69911, fill=True, color="#c18863")   
@@ -157,3 +156,9 @@ def test():
     draw_ring()
     show()
 
+def h(x, y):
+    x, y = np.abs(x), np.abs(y)
+    z = 1 - x - y + x*y
+    z[x > 1] = 0
+    z[y > 1] = 0
+    return z
