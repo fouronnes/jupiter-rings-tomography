@@ -51,8 +51,8 @@ void output_attitude(std::ostream& str, SpiceDouble et, SpiceDouble et1, SpiceDo
         SpiceDouble dec   =  halfpi_c() - ang[1];
         SpiceDouble ra    =  ang[0]     - halfpi_c();
 
-        // Output RA, DE, twist
-        str << ra << " " << dec << " " << twist << std::endl;
+        // Output time, RA, DE, twist
+        str << et << " " << ra << " " << dec << " " << twist << std::endl;
     }
 }
 
@@ -69,36 +69,39 @@ int main()
     furnsh_c("setup.ker");
     SpiceDouble et, et1;
 
+    // State every minute from apoapsis to apoapsis
+    // Format: time,X,Y,Z
     // Orbit 1
     std::cout << "Orbit 1" << std::endl;
     str2et_c("2016 OCT 25 20:38:52", &et);
     str2et_c("2016 NOV 05 20:15:32", &et1);
-    write_state("juno-state-orbit1.txt", et, et1, 5*60);
+    write_state("juno-state-orbit1.txt", et, et1, 60);
 
     // Orbit 2
     std::cout << "Orbit 2" << std::endl;
     str2et_c("2016 NOV 05 20:15:32", &et);
     str2et_c("2016 NOV 16 20:25:32", &et1);
-    write_state("juno-state-orbit2.txt", et, et1, 5*60);
+    write_state("juno-state-orbit2.txt", et, et1, 60);
 
     // Orbit 3
     std::cout << "Orbit 3" << std::endl;
     str2et_c("2016 NOV 16 20:25:32", &et);
     str2et_c("2016 NOV 27 20:18:52", &et1);
-    write_state("juno-state-orbit3.txt", et, et1, 5*60);
+    write_state("juno-state-orbit3.txt", et, et1, 60);
 
     // Orbit 4
     std::cout << "Orbit 4" << std::endl;
     str2et_c("2016 NOV 27 20:18:52", &et);
     str2et_c("2016 DEC 08 20:12:12", &et1);
-    write_state("juno-state-orbit4.txt", et, et1, 5*60);
+    write_state("juno-state-orbit4.txt", et, et1, 60);
 
-    // Attitude every half second
+    // Attitude every 0.25 second for 5 minutes
+    // Format: time,RA,DE,Twist
     std::cout << "Attitude" << std::endl;
     str2et_c("2016 NOV 27 20:10:00", &et);
     str2et_c("2016 NOV 27 20:15:00", &et1);
     std::ofstream attitude_file("juno-attitude.txt");
     attitude_file.precision(6);
     attitude_file << std::fixed;
-    output_attitude(attitude_file, et, et1, 0.5);
+    output_attitude(attitude_file, et, et1, 0.25);
 }
