@@ -11,6 +11,11 @@ add_executable(calibration
     src/calibration.cpp
     )
 
+add_executable(simulation
+    src/simulation.cpp
+    )
+
 target_link_libraries(planetarium ${OpenCV_LIBS})
 target_link_libraries(calibration ${OpenCV_LIBS})
+target_link_libraries(simulation ${OpenCV_LIBS})
 
