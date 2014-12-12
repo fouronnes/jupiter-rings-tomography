@@ -29,18 +29,18 @@ def construct_roi(im, i, j):
     extending = True
     while extending:
         extending = False
-        # If there a white pixel to the left of the ROI
-        if im[i:i+h, j-1].any():
+        # If there's a white pixel to the left of the ROI
+        if im[i-1:i+h+1, [j-2, j-1]].any():
             extending = True
             j -= 1
 
         # Or to the right
-        if im[i:i+h, j+w].any():
+        if im[i-1:i+h+1, [j+w-1, j+w]].any():
             extending = True
             w += 1
 
         # Or below
-        if im[i+h, j:j+w].any():
+        if im[[i+h-1, i+h], j-1:j+w+1].any():
             extending = True
             h += 1
 
@@ -105,14 +105,17 @@ def sort_by_pixel_value(stars_data):
     such that the order is of increasing pixel value on the projector
     """
 
-    # 29 is the number of pixels in a line in the calibration images
-    key = stars_data[:,1] * 29 + stars_data[:,0]
+    x_num = 29
+    x_step = 20
+    y_step = 20
+    weight = (x_num + 1) * x_step / y_step
+    key = stars_data[:,1] * weight + stars_data[:,0]
 
     # Add key variable as the first column
     plused = append(key[:,None], stars_data, axis=1)
 
     # Sort and return the 3 original variables
-    return sort(plused, axis=0)[:,1:]
+    return np.array(sorted(plused, key=lambda x:x[0]))[:,1:]
 
 def make_calibration_curve(image, p_range, noise_threshold):
 
@@ -123,21 +126,28 @@ def make_calibration_curve(image, p_range, noise_threshold):
     plot(p_range[-len(star_data[:,2]):], star_data[:,2], '+', ms=1)
     show()
 
-def calib_plot(images, p_range, noise_threshold, newfig=True):
+def calib_plot(images, p_range, noise_threshold, color, newfig=True):
     if newfig:
         figure()
     for im in images:
         # Threshold, extract stars, integrate for intensity, sort by pixel value
         sd = sort_by_pixel_value(extract_stars_data(im, noise_threshold))
         # Assume non visible stars are too dark
-        plot(p_range[-len(sd[:,2]):], sd[:,2], '+', ms=1)
+        plot(p_range[-len(sd[:,2]):], sd[:,2], '-', ms=1, color=color)
     show()
 
 def plot_all():
-    figure()
-    calib_plot(all_images[10000], p_range, 0.2, newfig=False)
-    calib_plot(all_images[40000], p_range, 0.2, newfig=False)
-    calib_plot(all_images[20000], p_range, 0.2, newfig=False)
+    f = figure()
+    ax = f.add_subplot(111)
+
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
+
+    calib_plot(all_images[10000], p_range, 0.2, color="red", newfig=False)
+    calib_plot(all_images[20000], p_range, 0.2, color="green", newfig=False)
+    calib_plot(all_images[40000], p_range, 0.2, color="blue", newfig=False)
     xticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
     xticks([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
     yticks(np.arange(0, 65, 5)[1:])
