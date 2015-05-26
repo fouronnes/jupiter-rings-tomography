@@ -124,20 +124,21 @@ int main() {
     cv::Mat image = cv::Mat::zeros(wall.screen_height, wall.screen_width, CV_32FC1);
 
     // Reference intensity for the simulation
-    const float I_zero = 1.0 * pow(wall.sigma_0, 2) * M_PI;
-    const float x_step = 40;
-    const float y_step = 40;
-    
-    // np.logspace(-4, -1, 40, endpoint=True, base=10.0)
+    const float I_zero = 25.0 * pow(wall.sigma_0, 2) * M_PI;
+    const float x_step = 65;
+    const float y_step = 80;
+
+    // np.logspace(-4, -0.5, 25, endpoint=True, base=10.0)
     std::vector<float> taus =
-        { 0.0001    ,  0.00011938,  0.00014251,  0.00017013,  0.00020309,
-        0.00024245,  0.00028943,  0.00034551,  0.00041246,  0.00049239,
-        0.0005878 ,  0.0007017 ,  0.00083768,  0.001     ,  0.00119378,
-        0.0014251 ,  0.00170125,  0.00203092,  0.00242446,  0.00289427,
-        0.00345511,  0.00412463,  0.00492388,  0.00587802,  0.00701704,
-        0.00837678,  0.01      ,  0.01193777,  0.01425103,  0.01701254,
-        0.02030918,  0.02424462,  0.02894266,  0.03455107,  0.04124626,
-        0.04923883,  0.05878016,  0.07017038,  0.08376776,  0.1 };
+        {1.00000000e-04,   1.39905031e-04,   1.95734178e-04,
+         2.73841963e-04,   3.83118685e-04,   5.36002317e-04,
+         7.49894209e-04,   1.04913973e-03,   1.46779927e-03,
+         2.05352503e-03,   2.87298483e-03,   4.01945033e-03,
+         5.62341325e-03,   7.86743808e-03,   1.10069417e-02,
+         1.53992653e-02,   2.15443469e-02,   3.01416253e-02,
+         4.21696503e-02,   5.89974626e-02,   8.25404185e-02,
+         1.15478198e-01,   1.61559810e-01,   2.26030303e-01,
+         3.16227766e-01};
 
     float x = 100;
     float y = wall.screen_height/2 - y_step/2;
@@ -161,9 +162,9 @@ int main() {
         cv::imshow("Simulation", image);
     }
 
-    // cv::Mat image_uchar;
-    // image.convertTo(image_uchar, CV_8UC1, 255);
-    // cv::imwrite("simulation.png", image_uchar);
+    cv::Mat image_uchar;
+    image.convertTo(image_uchar, CV_8UC1, 255);
+    cv::imwrite("simulation.png", image_uchar);
 
     return 0;
 }
